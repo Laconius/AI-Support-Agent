@@ -1,0 +1,46 @@
+[
+  {
+    "order_id": "ORD-1001",
+    "customer_name": "Alex Rivera",
+    "email": "alex@example.com",
+    "status": "shipped",
+    "items": ["CloudRest Pillow - Queen", "Breathable Sheet Set - Queen"],
+    "tracking_number": "1Z999AA10123456784",
+    "carrier": "UPS",
+    "shipped_at": "2026-07-20",
+    "estimated_delivery": "2026-07-24"
+  },
+  {
+    "order_id": "ORD-1002",
+    "customer_name": "Jordan Lee",
+    "email": "jordan@example.com",
+    "status": "processing",
+    "items": ["NightEase Mattress Topper - Full"],
+    "tracking_number": null,
+    "carrier": null,
+    "shipped_at": null,
+    "estimated_delivery": "2026-07-30"
+  },
+  {
+    "order_id": "ORD-1003",
+    "customer_name": "Sam Patel",
+    "email": "sam@example.com",
+    "status": "delivered",
+    "items": ["SleepKit Starter Bundle"],
+    "tracking_number": "9400111899223344556677",
+    "carrier": "USPS",
+    "shipped_at": "2026-07-10",
+    "estimated_delivery": "2026-07-14"
+  },
+  {
+    "order_id": "ORD-1004",
+    "customer_name": "Casey Nguyen",
+    "email": "casey@example.com",
+    "status": "cancelled",
+    "items": ["Travel Sleep Mask"],
+    "tracking_number": null,
+    "carrier": null,
+    "shipped_at": null,
+    "estimated_delivery": null
+  }
+]

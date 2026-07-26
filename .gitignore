@@ -1,0 +1,17 @@
+# Python virtual environment
+.venv/
+
+# Environment variables (API keys, passwords)
+.env
+
+# Python cache files
+__pycache__/
+
+# Compiled Python files
+*.pyc
+
+# macOS metadata
+.DS_Store
+
+# Windows thumbnail cache
+Thumbs.db
