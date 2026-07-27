@@ -12,6 +12,7 @@ Reply drafting and real AI come later.
 
 from __future__ import annotations
 
+import re
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from typing import Optional
@@ -175,6 +176,11 @@ def classify_request(question: str) -> str:
         "where is my",
     ]
     if any(clue in text for clue in order_clues):
+        return ORDER_HELP
+
+    # Bare order ids like "ORD-1001" / "ord-1001" are order help even without
+    # the word "order" in the sentence.
+    if re.search(r"\bord-?\d{3,}\b", text, flags=re.IGNORECASE):
         return ORDER_HELP
 
     # 5) Product questions (what we sell / how it works).

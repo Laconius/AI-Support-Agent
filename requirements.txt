@@ -1,0 +1,10 @@
+# Python dependencies for AI-Support-Agent
+# Install into the project venv:
+#   .\.venv\Scripts\pip.exe install -r requirements.txt
+
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+openai>=1.0.0
+reportlab>=4.0.0

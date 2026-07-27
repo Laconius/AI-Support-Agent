@@ -426,6 +426,125 @@ AI_CLIENT_PY = Walkthrough(
     ],
 )
 
+REQUEST_LOG_PY = Walkthrough(
+    title="request_log.py - Remember What Happened",
+    subtitle="AI Support Agent (Better Sleep)  ·  app/request_log.py",
+    output_name="request-log-py-line-by-line.pdf",
+    overview=[
+        "request_log.py is a learning-friendly diary for each support request.",
+        "",
+        "After every question, main.py writes one line with:",
+        "  - timestamp",
+        "  - question",
+        "  - classification (lane), if we got that far",
+        "  - action taken (order lookup, knowledge reply, guardrail block, ...)",
+        "  - outcome (answered / escalated / blocked)",
+        "  - optional notes",
+        "",
+        "Format: JSONL (one JSON object per line) in data/logs/support_requests.jsonl",
+        "Log files are gitignored so practice questions do not get committed.",
+    ],
+    concepts=[
+        ("observability", "Making the system's behavior visible after the fact."),
+        ("JSONL", "JSON Lines: one complete JSON record per line; easy to append."),
+        ("append-only", "We add lines; we do not rewrite history each run."),
+        ("outcome vs action", "Outcome = how it ended; action = what we did to get there."),
+    ],
+    flow=[
+        "main finishes a path (answer / block / escalate) ->",
+        "log_request(...) opens support_requests.jsonl and appends one line.",
+    ],
+    entries=[
+        Entry("1-12", '"""Simple request log..."""',
+              "Module docstring: learning log, not full compliance audit."),
+        Entry("14-18", "imports: json, datetime, Path",
+              "JSON for the record shape; UTC timestamps; Path for the log file location."),
+        Entry("20-22", "LOG_DIR / LOG_PATH",
+              "data/logs/support_requests.jsonl under the project root."),
+        Entry("24-36", "OUTCOME_* and ACTION_* constants",
+              "Shared vocabulary so main.py does not scatter magic strings."),
+        Entry("39-66", "def log_request(...)",
+              "Build a dict, ensure the folder exists, append one JSON line, return the path."),
+    ],
+)
+
+AGENT_SERVICE_PY = Walkthrough(
+    title="agent_service.py - One Brain, Many Doors",
+    subtitle="AI Support Agent (Better Sleep)  ·  app/agent_service.py",
+    output_name="agent-service-py-line-by-line.pdf",
+    overview=[
+        "agent_service.py is the shared pipeline used by CLI and FastAPI.",
+        "",
+        "handle_question(question, channel=...) runs:",
+        "  guardrails -> classify -> facts/responses -> output guardrails -> log",
+        "",
+        "Returning AgentResult keeps channels thin: they only display or JSON-encode.",
+    ],
+    concepts=[
+        ("service layer", "Business logic shared by CLI, HTTP, and future webhooks."),
+        ("AgentResult", "A structured result object (reply, outcome, action, escalation)."),
+        ("channel", "cli / api / twilio - recorded for escalation and logging context."),
+    ],
+    flow=[
+        "api.py or main.py -> handle_question -> AgentResult -> print or JSON response.",
+    ],
+    entries=[
+        Entry("1-12", '"""Shared support agent pipeline..."""',
+              "Docstring: one brain for every front door."),
+        Entry("57-72", "@dataclass class AgentResult",
+              "Channel-agnostic result with to_dict() for the API."),
+        Entry("75-90", "def handle_question(...)",
+              "Public entry: take question + channel, return AgentResult."),
+        Entry("91-120", "input guardrails block/escalate branches",
+              "Same safety as before, but returns data instead of printing."),
+        Entry("122-220", "lane handlers (sleep/order/product/account/returns)",
+              "Facts + render + output guardrails + log for each answered lane."),
+        Entry("222-250", "escalation fallback",
+              "Build packet, customer reply, log, return escalation dict."),
+    ],
+)
+
+API_PY = Walkthrough(
+    title="api.py - FastAPI Web Front Door",
+    subtitle="AI Support Agent (Better Sleep)  ·  app/api.py",
+    output_name="api-py-line-by-line.pdf",
+    overview=[
+        "api.py exposes the agent over HTTP so websites and services can call it.",
+        "",
+        "Endpoints:",
+        "  GET  /health            - is the service up?",
+        "  POST /v1/support/ask    - send a question, get a reply + metadata",
+        "  GET  /docs              - interactive Swagger UI (built into FastAPI)",
+        "",
+        "Run: uvicorn api:app --app-dir app --reload",
+    ],
+    concepts=[
+        ("HTTP API", "Programs talk using URLs and JSON instead of a terminal prompt."),
+        ("FastAPI", "Modern Python web framework with automatic docs and validation."),
+        ("Uvicorn", "The server program that listens on a port and runs FastAPI."),
+        ("CORS", "Browser security rule; we relax it for local demos."),
+        ("endpoint", "One URL + method (GET/POST) that does a job."),
+    ],
+    flow=[
+        "Client POST /v1/support/ask JSON -> FastAPI validates with schemas ->",
+        "handle_question(...) -> SupportAskResponse JSON.",
+    ],
+    entries=[
+        Entry("1-20", '"""FastAPI web entry point..."""',
+              "Docstring explains HTTP vs CLI and how to run uvicorn."),
+        Entry("27-40", "app = FastAPI(...)",
+              "Create the application object (title, description, version)."),
+        Entry("42-50", "CORSMiddleware",
+              "Allow browser frontends to call the API during local demos."),
+        Entry("53-62", "GET /health",
+              "Liveness check including AI client status line."),
+        Entry("65-78", "POST /v1/support/ask",
+              "Main integration point: body.question -> handle_question -> JSON."),
+        Entry("81-88", "GET /",
+              "Tiny index pointing humans to /docs and key routes."),
+    ],
+)
+
 WALKTHROUGHS = [
     MAIN_PY,
     SUPPORT_PY,
@@ -434,6 +553,9 @@ WALKTHROUGHS = [
     GUARDRAILS_PY,
     RESPONSES_PY,
     AI_CLIENT_PY,
+    REQUEST_LOG_PY,
+    AGENT_SERVICE_PY,
+    API_PY,
 ]
 
 

@@ -33,23 +33,29 @@ Customer support teams spend significant time on repetitive, well-documented que
 ## What exists today (module map)
 
 ```text
-Customer question
-    │
-    ▼
-main.py                 orchestrator (CLI front door)
-    │
-    ├─► guardrails.py   allow / block / escalate (input + output)
-    ├─► support.py      classify lane + EscalationPacket
-    ├─► orders.py       order FACTS (status, tracking)
-    ├─► knowledge.py    knowledge FACTS (retrieve snippets)
-    ├─► responses.py    wording (template → AI warm rewrite)
-    │       └─► ai_client.py   OpenAI (or future provider) connection
-    └─► config.py       .env secrets (never hardcode keys)
+                    ┌─────────────┐     ┌─────────────┐
+ Web / services ───►│  api.py     │     │  main.py    │◄── terminal (CLI)
+                    │  (FastAPI)  │     │  (CLI)      │
+                    └──────┬──────┘     └──────┬──────┘
+                           │                   │
+                           └─────────┬─────────┘
+                                     ▼
+                           agent_service.py
+                           (shared pipeline)
+                                     │
+         ┌───────────┬───────────┬───┴───┬───────────┬────────────┐
+         ▼           ▼           ▼       ▼           ▼            ▼
+   guardrails   support.py   orders   knowledge  responses   request_log
+                 classify              facts         │
+                                                   ai_client
 ```
 
 | File | Job in plain English | Technical role |
 |------|----------------------|----------------|
-| `app/main.py` | Runs the conversation loop | Orchestration |
+| `app/main.py` | Terminal chat front door | CLI channel |
+| `app/api.py` | HTTP front door for web/services | FastAPI app |
+| `app/schemas.py` | Describes JSON in/out | Pydantic models |
+| `app/agent_service.py` | One function: handle a question end-to-end | Shared service layer |
 | `app/config.py` | Loads API keys from `.env` | Configuration / secrets |
 | `app/ai_client.py` | Talks to OpenAI (swap-ready) | LLM provider adapter |
 | `app/support.py` | Picks a support lane; builds handoffs | Classifier + escalation |
@@ -57,16 +63,52 @@ main.py                 orchestrator (CLI front door)
 | `app/knowledge.py` | Finds approved doc sections | Retrieval (R in RAG) |
 | `app/responses.py` | Turns facts into customer language | Generation (G in RAG) |
 | `app/guardrails.py` | Hard safety rules | Policy enforcement |
+| `app/request_log.py` | Records each request for review | Observability (JSONL log) |
 | `data/orders.json` | Sample orders | Stand-in order system |
 | `data/knowledge/*.md` | Approved product / policy / sleep tips | Knowledge base |
+| `data/logs/support_requests.jsonl` | Local request diary (gitignored) | Learning / debugging |
 
-Study PDFs (living docs): `docs/*-line-by-line.pdf` — regenerated when modules change.
+### Study guides (printables)
 
-**RAG study sheet (print this):** [`docs/rag-cheat-sheet.pdf`](docs/rag-cheat-sheet.pdf) — discrete concept compartments + a worked example from this repo. Regenerate with:
+| PDF | What to ruminate on |
+|-----|---------------------|
+| [`docs/rag-cheat-sheet.pdf`](docs/rag-cheat-sheet.pdf) | RAG compartments (R / A / G) + worked example |
+| [`docs/ai-client-py-line-by-line.pdf`](docs/ai-client-py-line-by-line.pdf) | How we talk to OpenAI (provider adapter) |
+| [`docs/request-log-py-line-by-line.pdf`](docs/request-log-py-line-by-line.pdf) | Request diary (question / lane / outcome) |
+| [`docs/agent-service-py-line-by-line.pdf`](docs/agent-service-py-line-by-line.pdf) | Shared pipeline (CLI + API brain) |
+| [`docs/api-py-line-by-line.pdf`](docs/api-py-line-by-line.pdf) | FastAPI HTTP front door |
+| [`docs/responses-py-line-by-line.pdf`](docs/responses-py-line-by-line.pdf) | Facts → warm customer language |
+| [`docs/knowledge-py-line-by-line.pdf`](docs/knowledge-py-line-by-line.pdf) | Retrieving approved doc sections |
+| [`docs/orders-py-line-by-line.pdf`](docs/orders-py-line-by-line.pdf) | Order facts (status / tracking) |
+| [`docs/guardrails-py-line-by-line.pdf`](docs/guardrails-py-line-by-line.pdf) | Hard safety rules |
+| [`docs/support-py-line-by-line.pdf`](docs/support-py-line-by-line.pdf) | Classifier + escalation packet |
+| [`docs/main-py-line-by-line.pdf`](docs/main-py-line-by-line.pdf) | How the CLI wires everything |
+| [`docs/twilio-ai-support-architecture.pdf`](docs/twilio-ai-support-architecture.pdf) | Future messaging channel (RCS/SMS) |
+
+Regenerate code walkthroughs:
+
+```powershell
+.\.venv\Scripts\python.exe docs\generate_walkthroughs.py
+```
+
+Regenerate the RAG cheat sheet:
 
 ```powershell
 .\.venv\Scripts\python.exe docs\generate_rag_cheat_sheet.py
 ```
+
+---
+
+## Repository on GitHub
+
+Remote (already connected):
+
+`https://github.com/Laconius/AI-Support-Agent.git`
+
+- **Git remote** (this folder ↔ that repo): Source Control sidebar, or `git remote -v`
+- **Cursor ↔ GitHub account** (app login for PRs/features): Cursor Settings → search “GitHub”
+
+Do not commit `.env`. Use `.env.example` as the safe template for collaborators.
 
 ---
 
@@ -158,6 +200,8 @@ Destination map (includes channels and ops we have not fully built yet):
 | Area | Choice | Notes |
 |------|--------|-------|
 | Language | Python 3.12+ | Learning-friendly, strong AI ecosystem |
+| HTTP API | **FastAPI** + **Uvicorn** | Web/service front door (`app/api.py`) |
+| Data validation | **Pydantic** (`schemas.py`) | Request/response contracts |
 | LLM access | `ai_client.py` + OpenAI SDK | Anthropic (etc.) later behind same Protocol |
 | Knowledge | Markdown in `data/knowledge/` | Vector DB later |
 | Orders | `data/orders.json` | Stand-in for Shopify/ERP |
@@ -185,6 +229,8 @@ AI_WARM_REWRITE=true
 - **Knowledge retrieval** (`knowledge.py`)  
 - **Guardrails** (`guardrails.py`)  
 - **Responses + AI warm rewrite** (`responses.py` + `ai_client.py`)  
+- **Request logging** (`request_log.py`)  
+- **Shared pipeline + FastAPI** (`agent_service.py`, `api.py`, `schemas.py`)  
 - **CLI orchestrator** (`main.py`)  
 
 ### Next
@@ -192,19 +238,53 @@ AI_WARM_REWRITE=true
 - Conversation state (multi-turn)  
 - Persist escalation queue  
 - Evaluation set of support questions  
-- FastAPI + webhook path (Twilio RCS/SMS)  
+- Twilio RCS/SMS webhook adapter calling `/v1/support/ask`  
 - Production hardening (Postgres, auth, monitoring)  
 
 ---
 
-## How to run (CLI)
+## How to run
+
+### CLI (terminal)
 
 ```powershell
-cd app
-..\.venv\Scripts\python.exe main.py
+.\.venv\Scripts\python.exe app\main.py
 ```
 
-Examples:
+### HTTP API (FastAPI)
+
+```powershell
+.\.venv\Scripts\uvicorn.exe api:app --app-dir app --reload --host 127.0.0.1 --port 8000
+```
+
+Then open:
+
+- Interactive docs: http://127.0.0.1:8000/docs  
+- Health: http://127.0.0.1:8000/health  
+
+Example ask (PowerShell):
+
+```powershell
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/v1/support/ask `
+  -ContentType "application/json" `
+  -Body '{"question":"Where is order ORD-1001?","channel":"web"}'
+```
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /health` | Is the service up? |
+| `POST /v1/support/ask` | Send a customer question; get reply + metadata |
+| `GET /docs` | Built-in Swagger UI (try the API in the browser) |
+
+**How web traffic connects later:** a website, mobile app, or Twilio webhook calls `POST /v1/support/ask` (or a thin adapter that calls `handle_question`). The agent logic stays in `agent_service.py` — you add doors, not duplicate brains.
+
+Install / refresh dependencies:
+
+```powershell
+.\.venv\Scripts\pip.exe install -r requirements.txt
+```
+
+Examples to try (CLI or API):
 
 - `Where is order ORD-1001?` — order facts + warm wording  
 - `Is the CloudRest pillow washable?` — knowledge retrieval + warm wording  

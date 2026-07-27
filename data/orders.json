@@ -1,14 +1,14 @@
 [
   {
     "order_id": "ORD-1001",
-    "customer_name": "Alex Rivera",
-    "email": "alex@example.com",
+    "customer_name": "Demo Customer",
+    "email": "demo@bettersleep.example",
     "status": "shipped",
     "items": ["CloudRest Pillow - Queen", "Breathable Sheet Set - Queen"],
-    "tracking_number": "1Z999AA10123456784",
+    "tracking_number": "TEST-12345",
     "carrier": "UPS",
-    "shipped_at": "2026-07-20",
-    "estimated_delivery": "2026-07-24"
+    "shipped_at": "2026-07-22",
+    "estimated_delivery": "2026-07-28"
   },
   {
     "order_id": "ORD-1002",
@@ -27,7 +27,7 @@
     "email": "sam@example.com",
     "status": "delivered",
     "items": ["SleepKit Starter Bundle"],
-    "tracking_number": "9400111899223344556677",
+    "tracking_number": "TEST-98765",
     "carrier": "USPS",
     "shipped_at": "2026-07-10",
     "estimated_delivery": "2026-07-14"
@@ -42,5 +42,27 @@
     "carrier": null,
     "shipped_at": null,
     "estimated_delivery": null
+  },
+  {
+    "order_id": "ORD-1005",
+    "customer_name": "Mia Chen",
+    "email": "mia@example.com",
+    "status": "placed",
+    "items": ["CloudRest Pillow - Standard"],
+    "tracking_number": null,
+    "carrier": null,
+    "shipped_at": null,
+    "estimated_delivery": "2026-08-05"
+  },
+  {
+    "order_id": "ORD-1006",
+    "customer_name": "Evan Brooks",
+    "email": "evan@example.com",
+    "status": "shipped",
+    "items": ["NightEase Mattress Topper - Queen"],
+    "tracking_number": "TEST-55555",
+    "carrier": "FedEx",
+    "shipped_at": "2026-07-24",
+    "estimated_delivery": "2026-07-29"
   }
 ]
