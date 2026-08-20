@@ -237,9 +237,13 @@ AI_WARM_REWRITE=true
 - Stronger RAG retrieval (embeddings when doc volume needs it)  
 - Conversation state (multi-turn)  
 - Persist escalation queue  
-- Evaluation set of support questions  
 - Twilio RCS/SMS webhook adapter calling `/v1/support/ask`  
 - Production hardening (Postgres, auth, monitoring)  
+- Simple chat UI calling `/v1/support/ask`  
+
+### Quality checks
+- Eval set: [`data/evals/support_eval_set.json`](data/evals/support_eval_set.json)  
+  Run: `.\.venv\Scripts\python.exe -m pytest tests\test_support_eval.py -v` 
 
 ---
 
@@ -288,6 +292,7 @@ Examples to try (CLI or API):
 
 - `Where is order ORD-1001?` — order facts + warm wording  
 - `Is the CloudRest pillow washable?` — knowledge retrieval + warm wording  
+- `What is your return policy?` — policies.md retrieval (no refund promises)  
 - `Do I have sleep apnea?` — blocked by guardrails  
 
 ---
