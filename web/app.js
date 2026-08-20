@@ -1,8 +1,8 @@
 /**
- * Better Sleep support chat client.
+ * Sopoforix support chat client.
  *
  * Plain idea: type a question in the browser; send it to our API; show the reply.
- * Technical idea: fetch() POST to /v1/support/ask — same door Shopify/Twilio can use later.
+ * Technical idea: fetch() POST to /v1/support/ask — same door other brands can use later.
  */
 
 const form = document.getElementById("ask-form");

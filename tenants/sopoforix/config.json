@@ -1,0 +1,9 @@
+{
+  "id": "sopoforix",
+  "display_name": "Sopoforix",
+  "tagline": "Sleep Better, Live Better",
+  "support_intro": "Hi — I’m the Sopoforix support agent. Try something like “Where is order ORD-1001?” or “What is your return policy?”",
+  "knowledge_dir": "knowledge",
+  "orders_file": "orders.json",
+  "channels": ["web", "cli", "api"]
+}

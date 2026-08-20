@@ -46,7 +46,7 @@ def test_chat_ui_served(client: TestClient) -> None:
     assert response.status_code == 200
     assert "text/html" in response.headers.get("content-type", "")
     text = response.text
-    assert "Better Sleep" in text
+    assert "Sopoforix" in text
     assert "/v1/support/ask" in Path(PROJECT_ROOT / "web" / "app.js").read_text(
         encoding="utf-8"
     )
@@ -57,7 +57,7 @@ def test_static_assets_served(client: TestClient) -> None:
     js = client.get("/static/app.js")
     assert css.status_code == 200
     assert js.status_code == 200
-    assert "Better Sleep" in css.text or "sea" in css.text
+    assert "sea" in css.text or "night" in css.text
     assert "support/ask" in js.text
 
 
@@ -67,6 +67,8 @@ def test_api_info(client: TestClient) -> None:
     body = response.json()
     assert body["ask"] == "POST /v1/support/ask"
     assert body["chat"] == "/"
+    assert body["tenant"] == "sopoforix"
+    assert body["display_name"] == "Sopoforix"
 
 
 def test_support_ask_returns_shape(client: TestClient) -> None:

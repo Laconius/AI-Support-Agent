@@ -31,11 +31,15 @@ from orders import (
     OrderHelpFacts,
 )
 from support import SLEEP_DISCLAIMER
+from tenant import get_tenant
 
 AI_WARM_REWRITE_ENV = "AI_WARM_REWRITE"  # true/false — default true
 
-_SYSTEM_PROMPT = """
-You are a helpful customer support writer for a better-sleep brand.
+
+def _system_prompt() -> str:
+    brand = get_tenant().display_name
+    return f"""
+You are a helpful customer support writer for {brand}.
 
 Your job: rewrite the FACTS below into warm, clear customer-facing language.
 
@@ -77,7 +81,7 @@ def _warm_rewrite(facts_text: str, *, customer_question: str = "", lane: str = "
         client = get_ai_client()
         return client.complete(
             [
-                ChatMessage(role="system", content=_SYSTEM_PROMPT),
+                ChatMessage(role="system", content=_system_prompt()),
                 ChatMessage(role="user", content="\n\n".join(user_parts)),
             ],
             temperature=0.3,

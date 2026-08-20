@@ -2,7 +2,7 @@
   {
     "order_id": "ORD-1001",
     "customer_name": "Demo Customer",
-    "email": "demo@bettersleep.example",
+    "email": "demo@sopoforix.example",
     "status": "shipped",
     "items": ["CloudRest Pillow - Queen", "Breathable Sheet Set - Queen"],
     "tracking_number": "TEST-12345",

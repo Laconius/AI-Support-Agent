@@ -31,15 +31,19 @@ from fastapi.staticfiles import StaticFiles
 from agent_service import handle_question
 from ai_client import describe_ai_client
 from schemas import HealthResponse, SupportAskRequest, SupportAskResponse
+from tenant import get_tenant
 
 # Project root /web — HTML/CSS/JS for the chat channel.
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
 
+_tenant = get_tenant()
+
 app = FastAPI(
-    title="AI Support Agent — Better Sleep",
+    title=f"AI Support Agent — {_tenant.display_name}",
     description=(
         "HTTP API for the customer support agent. "
-        "Same pipeline as the CLI: guardrails → classify → facts → responses → log."
+        "Same pipeline as the CLI: guardrails → classify → facts → responses → log. "
+        f"Active tenant: {_tenant.id}."
     ),
     version="0.1.0",
 )
@@ -84,8 +88,11 @@ def support_ask(body: SupportAskRequest) -> SupportAskResponse:
 @app.get("/api")
 def api_info() -> dict[str, str]:
     """Machine-readable pointers (chat UI owns /)."""
+    tenant = get_tenant()
     return {
         "service": "ai-support-agent",
+        "tenant": tenant.id,
+        "display_name": tenant.display_name,
         "docs": "/docs",
         "health": "/health",
         "ask": "POST /v1/support/ask",

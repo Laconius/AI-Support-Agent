@@ -4,9 +4,10 @@ Knowledge base for the sleep-company AI agent.
 Plain idea: the agent should answer from approved company documents,
 not from imagination.
 
-Technical idea: a tiny retrieval module. We load markdown files from
-data/knowledge/, split them into titled sections, and return the sections
-that best match the customer's question (simple keyword scoring for now).
+Technical idea: a tiny retrieval module. We load markdown files from the
+active tenant's knowledge/ folder, split them into titled sections, and
+return the sections that best match the customer's question (simple
+keyword scoring for now).
 
 This is step one toward RAG (Retrieval-Augmented Generation): this file
 *retrieves* approved sections; responses.py turns them into customer language.
@@ -17,10 +18,8 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-KNOWLEDGE_DIR = PROJECT_ROOT / "data" / "knowledge"
+from tenant import get_tenant
 
 # Words too common to signal meaning; ignored when scoring matches.
 STOPWORDS = {
@@ -48,15 +47,16 @@ def _words(text: str) -> set[str]:
 
 def _load_snippets() -> list[Snippet]:
     """
-    Read every markdown file in data/knowledge/ and split it into sections.
+    Read every markdown file in the active tenant knowledge dir.
 
     Convention: "# Title" names the document, "## Heading" starts a section.
     """
+    knowledge_dir = get_tenant().knowledge_dir
     snippets: list[Snippet] = []
-    if not KNOWLEDGE_DIR.exists():
+    if not knowledge_dir.exists():
         return snippets
 
-    for path in sorted(KNOWLEDGE_DIR.glob("*.md")):
+    for path in sorted(knowledge_dir.glob("*.md")):
         document = path.stem.replace("-", " ").title()
         section = "Introduction"
         lines: list[str] = []

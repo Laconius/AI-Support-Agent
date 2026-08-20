@@ -9,9 +9,12 @@ from ai_client import describe_ai_client
 from agent_service import handle_question
 from config import print_openai_key_status
 from request_log import LOG_PATH
+from tenant import get_tenant
+
+tenant = get_tenant()
 
 print("=" * 40)
-print(" AI Support Agent — Better Sleep")
+print(f" AI Support Agent — {tenant.display_name}")
 print("=" * 40)
 
 print()

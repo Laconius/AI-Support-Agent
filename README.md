@@ -1,6 +1,8 @@
 # AI Customer Support Engineer
 
-An AI-powered customer support agent for a **better-sleep** brand. It answers from approved facts, speaks in warm customer language, stays inside safety guardrails, and escalates to humans when needed.
+An AI-powered customer support agent for **Sopoforix** (sleep better, live better). It answers from approved facts, speaks in warm customer language, stays inside safety guardrails, and escalates to humans when needed.
+
+Business-specific content lives under `tenants/sopoforix/`. Shared engine code lives in `app/` so additional brands can be added later as new tenant packs.
 
 This repository is a guided, production-shaped build: fundamentals first, then channels, quality, and operations.
 
@@ -55,6 +57,8 @@ Customer support teams spend significant time on repetitive, well-documented que
 | `app/main.py` | Terminal chat front door | CLI channel |
 | `app/api.py` | HTTP front door for web/services | FastAPI app |
 | `web/` | Browser chat page | Static HTML/CSS/JS channel |
+| `app/tenant.py` | Loads the active business pack | Multi-tenant config |
+| `tenants/sopoforix/` | Sopoforix name, knowledge, demo orders | Tenant pack |
 | `app/schemas.py` | Describes JSON in/out | Pydantic models |
 | `app/agent_service.py` | One function: handle a question end-to-end | Shared service layer |
 | `app/config.py` | Loads API keys from `.env` | Configuration / secrets |
@@ -65,9 +69,8 @@ Customer support teams spend significant time on repetitive, well-documented que
 | `app/responses.py` | Turns facts into customer language | Generation (G in RAG) |
 | `app/guardrails.py` | Hard safety rules | Policy enforcement |
 | `app/request_log.py` | Records each request for review | Observability (JSONL log) |
-| `data/orders.json` | Sample orders | Stand-in order system |
-| `data/knowledge/*.md` | Approved product / policy / sleep tips | Knowledge base |
 | `data/logs/support_requests.jsonl` | Local request diary (gitignored) | Learning / debugging |
+| `data/evals/` | Gold questions for quality checks | Evaluation set |
 
 ### Study guides (printables)
 
@@ -204,8 +207,8 @@ Destination map (includes channels and ops we have not fully built yet):
 | HTTP API | **FastAPI** + **Uvicorn** | Web/service front door (`app/api.py`) |
 | Data validation | **Pydantic** (`schemas.py`) | Request/response contracts |
 | LLM access | `ai_client.py` + OpenAI SDK | Anthropic (etc.) later behind same Protocol |
-| Knowledge | Markdown in `data/knowledge/` | Vector DB later |
-| Orders | `data/orders.json` | Stand-in for Shopify/ERP |
+| Knowledge | Markdown in `tenants/<id>/knowledge/` | Vector DB later |
+| Orders | `tenants/<id>/orders.json` | Stand-in for Shopify/ERP |
 | Secrets | `.env` (gitignored) | See `.env.example` |
 | Safety | `guardrails.py` | Input + output checks |
 | Docs | `docs/*-line-by-line.pdf` | Regenerated with code changes |
@@ -217,6 +220,7 @@ AI_PROVIDER=openai
 OPENAI_API_KEY=sk-proj-...
 OPENAI_MODEL=gpt-4o-mini
 AI_WARM_REWRITE=true
+ACTIVE_TENANT=sopoforix
 ```
 
 ---

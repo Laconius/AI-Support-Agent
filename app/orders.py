@@ -7,7 +7,7 @@ this file looks up the *facts* (status, tracking).
 Technical idea: a small data/service module. Classification stays in
 support.py; customer wording lives in responses.py.
 
-Today we use sample orders in data/orders.json.
+Today we use sample orders from the active tenant pack (orders.json).
 Later this can call a real order system (Shopify, ERP, etc.) without
 changing how responses.py phrases the reply.
 """
@@ -17,8 +17,9 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import asdict, dataclass
-from pathlib import Path
 from typing import Optional
+
+from tenant import get_tenant
 
 # Status values we allow in sample / future real data.
 STATUS_PLACED = "placed"
@@ -26,9 +27,6 @@ STATUS_PROCESSING = "processing"
 STATUS_SHIPPED = "shipped"
 STATUS_DELIVERED = "delivered"
 STATUS_CANCELLED = "cancelled"
-
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-ORDERS_PATH = PROJECT_ROOT / "data" / "orders.json"
 
 
 @dataclass
@@ -77,10 +75,11 @@ class OrderHelpFacts:
 
 def _load_orders() -> dict[str, Order]:
     """Read sample orders from disk into Order objects."""
-    if not ORDERS_PATH.exists():
+    orders_path = get_tenant().orders_path
+    if not orders_path.exists():
         return {}
 
-    raw = json.loads(ORDERS_PATH.read_text(encoding="utf-8"))
+    raw = json.loads(orders_path.read_text(encoding="utf-8"))
     orders: dict[str, Order] = {}
     for row in raw:
         order = Order(
