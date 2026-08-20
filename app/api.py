@@ -7,26 +7,33 @@ mobile apps) instead of only through the terminal.
 Technical idea: FastAPI app that calls agent_service.handle_question —
 same brain as the CLI, different door.
 
+The browser chat UI lives in /web and is served at /.
+It POSTs to /v1/support/ask — the same endpoint a Shopify widget can use later.
+
 Run from project root (with venv active):
 
-    uvicorn app.api:app --reload --app-dir .
+    .\\.venv\\Scripts\\uvicorn.exe api:app --app-dir app --reload --host 127.0.0.1 --port 8000
 
-Or from the app folder:
-
-    cd app
-    ..\\.venv\\Scripts\\uvicorn.exe api:app --reload
-
-Then open http://127.0.0.1:8000/docs for interactive API docs.
+Then open:
+  - Chat UI:  http://127.0.0.1:8000/
+  - API docs: http://127.0.0.1:8000/docs
 """
 
 from __future__ import annotations
 
-from fastapi import FastAPI
+from pathlib import Path
+
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from agent_service import handle_question
 from ai_client import describe_ai_client
 from schemas import HealthResponse, SupportAskRequest, SupportAskResponse
+
+# Project root /web — HTML/CSS/JS for the chat channel.
+WEB_DIR = Path(__file__).resolve().parent.parent / "web"
 
 app = FastAPI(
     title="AI Support Agent — Better Sleep",
@@ -46,6 +53,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# CSS/JS at /static/... (index.html references these paths).
+if WEB_DIR.is_dir():
+    app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -70,11 +81,22 @@ def support_ask(body: SupportAskRequest) -> SupportAskResponse:
     return SupportAskResponse(**result.to_dict())
 
 
-@app.get("/")
-def root() -> dict[str, str]:
+@app.get("/api")
+def api_info() -> dict[str, str]:
+    """Machine-readable pointers (chat UI owns /)."""
     return {
         "service": "ai-support-agent",
         "docs": "/docs",
         "health": "/health",
         "ask": "POST /v1/support/ask",
+        "chat": "/",
     }
+
+
+@app.get("/")
+def chat_ui() -> FileResponse:
+    """Browser front door — same agent brain as CLI and /v1/support/ask."""
+    index = WEB_DIR / "index.html"
+    if not index.is_file():
+        raise HTTPException(status_code=404, detail="Chat UI not found (web/index.html).")
+    return FileResponse(index)

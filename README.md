@@ -54,6 +54,7 @@ Customer support teams spend significant time on repetitive, well-documented que
 |------|----------------------|----------------|
 | `app/main.py` | Terminal chat front door | CLI channel |
 | `app/api.py` | HTTP front door for web/services | FastAPI app |
+| `web/` | Browser chat page | Static HTML/CSS/JS channel |
 | `app/schemas.py` | Describes JSON in/out | Pydantic models |
 | `app/agent_service.py` | One function: handle a question end-to-end | Shared service layer |
 | `app/config.py` | Loads API keys from `.env` | Configuration / secrets |
@@ -239,8 +240,6 @@ AI_WARM_REWRITE=true
 - Persist escalation queue  
 - Twilio RCS/SMS webhook adapter calling `/v1/support/ask`  
 - Production hardening (Postgres, auth, monitoring)  
-- Simple chat UI calling `/v1/support/ask`  
-
 ### Quality checks
 - Eval set: [`data/evals/support_eval_set.json`](data/evals/support_eval_set.json)  
   Run: `.\.venv\Scripts\python.exe -m pytest tests\test_support_eval.py -v` 
@@ -255,7 +254,7 @@ AI_WARM_REWRITE=true
 .\.venv\Scripts\python.exe app\main.py
 ```
 
-### HTTP API (FastAPI)
+### HTTP API + chat UI (FastAPI)
 
 ```powershell
 .\.venv\Scripts\uvicorn.exe api:app --app-dir app --reload --host 127.0.0.1 --port 8000
@@ -263,8 +262,11 @@ AI_WARM_REWRITE=true
 
 Then open:
 
+- **Chat UI:** http://127.0.0.1:8000/  
 - Interactive docs: http://127.0.0.1:8000/docs  
 - Health: http://127.0.0.1:8000/health  
+
+The page in `web/` POSTs to `/v1/support/ask` with `channel: "web"` — same agent as the CLI. Later a Shopify embed can call that same endpoint.
 
 Example ask (PowerShell):
 
@@ -276,9 +278,11 @@ Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/v1/support/ask `
 
 | Endpoint | Purpose |
 |----------|---------|
+| `GET /` | Browser chat UI |
 | `GET /health` | Is the service up? |
 | `POST /v1/support/ask` | Send a customer question; get reply + metadata |
 | `GET /docs` | Built-in Swagger UI (try the API in the browser) |
+| `GET /api` | Machine-readable service pointers |
 
 **How web traffic connects later:** a website, mobile app, or Twilio webhook calls `POST /v1/support/ask` (or a thin adapter that calls `handle_question`). The agent logic stays in `agent_service.py` — you add doors, not duplicate brains.
 
