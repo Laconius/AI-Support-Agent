@@ -204,18 +204,45 @@ def render_account_help(*, question: str = "") -> str:
     )
 
 
-def _template_returns_help() -> str:
-    return (
-        "I can explain our return and refund policy and help start a review. "
+def _template_returns_help(snippets: list[Snippet]) -> str:
+    """
+    Policy facts first; always remind that humans approve refunds.
+
+    Plain idea: cite what we published, never invent a refund promise.
+    """
+    footer = (
         "I cannot approve or promise a refund myself - a teammate makes that decision. "
         "Would you like me to escalate this for a human review?"
     )
 
+    if not snippets:
+        return (
+            "I can help with returns and refunds, but I do not have matching "
+            "approved policy text for this question yet. "
+            + footer
+        )
 
-def render_returns_help(*, question: str = "") -> str:
-    """Returns / refunds messaging without promising a refund."""
+    parts: list[str] = ["Here is what our approved return and refund policy says:", ""]
+    for snippet in snippets:
+        parts.append(f"From {snippet.document} - {snippet.section}:")
+        parts.append(snippet.content)
+        parts.append("")
+
+    sources = ", ".join(sorted({s.source_file for s in snippets}))
+    parts.append(f"(Sources: {sources})")
+    parts.append("")
+    parts.append(footer)
+    return "\n".join(parts)
+
+
+def render_returns_help(
+    snippets: list[Snippet] | None = None,
+    *,
+    question: str = "",
+) -> str:
+    """Returns / refunds messaging grounded in policy snippets when available."""
     return _warm_rewrite(
-        _template_returns_help(),
+        _template_returns_help(snippets or []),
         customer_question=question,
         lane="returns_refunds_complaints",
     )
@@ -263,7 +290,7 @@ def render_from_facts(
     if kind == "account":
         return render_account_help(question=question)
     if kind == "returns":
-        return render_returns_help(question=question)
+        return render_returns_help(snippets or [], question=question)
     if kind == "escalation":
         return render_escalation_customer(question=question)
     raise ValueError(f"Unknown response kind: {kind}")

@@ -212,15 +212,18 @@ def handle_question(question: str, *, channel: str = "cli") -> AgentResult:
         )
 
     if category == RETURNS_REFUNDS_COMPLAINTS:
-        draft = render_returns_help(question=text)
+        # Same retrieve pattern as sleep/product: prefer the policy document.
+        snippets = search_knowledge(text, prefer_file="policies.md")
+        draft = render_returns_help(snippets, question=text)
         action = ACTION_RETURNS_HELP
+        notes = "prefer_file=policies.md"
         reply = apply_output_guardrails(draft, question=text)
         log_request(
             question=text,
             classification=category,
             action=action,
             outcome=OUTCOME_ANSWERED,
-            notes="",
+            notes=notes,
         )
         return AgentResult(
             question=text,
@@ -229,6 +232,7 @@ def handle_question(question: str, *, channel: str = "cli") -> AgentResult:
             action=action,
             classification=category,
             classification_label=label,
+            notes=notes,
         )
 
     # Escalation lane (or unknown fallback)
