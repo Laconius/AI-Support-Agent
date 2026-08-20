@@ -242,7 +242,10 @@ AI_WARM_REWRITE=true
 - Production hardening (Postgres, auth, monitoring)  
 ### Quality checks
 - Eval set: [`data/evals/support_eval_set.json`](data/evals/support_eval_set.json)  
-  Run: `.\.venv\Scripts\python.exe -m pytest tests\test_support_eval.py -v` 
+  Run: `.\.venv\Scripts\python.exe -m pytest tests\test_support_eval.py -v`  
+- API smoke tests: `tests/test_api_smoke.py` (health, chat UI, `/ask` wiring)  
+  Run: `.\.venv\Scripts\python.exe -m pytest tests\test_api_smoke.py -v`  
+- All tests: `.\.venv\Scripts\python.exe -m pytest -v` 
 
 ---
 
